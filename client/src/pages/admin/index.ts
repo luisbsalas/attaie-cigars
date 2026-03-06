@@ -1,0 +1,13 @@
+export { default as AdminLogin } from "./AdminLogin";
+export { default as AdminDashboard } from "./AdminDashboard";
+export { default as AdminOrders } from "./AdminOrders";
+export { default as AdminProducts } from "./AdminProducts";
+export { default as AdminPromoCodes } from "./AdminPromoCodes";
+export { default as AdminSettings } from "./AdminSettings";
+export { default as AdminCustomers } from "./AdminCustomers";
+export { default as AdminReviews } from "./AdminReviews";
+export { default as AdminNewsletter } from "./AdminNewsletter";
+export { default as AdminReports } from "./AdminReports";
+export { default as AdminContent } from "./AdminContent";
+export { default as AdminEmailTemplates } from "./AdminEmailTemplates";
+export { default as AdminNotifications } from "./AdminNotifications";
