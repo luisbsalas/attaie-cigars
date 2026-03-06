@@ -6,8 +6,6 @@ import { registerStripeRoutes } from "./stripeRoutes";
 import shippingRoutes from "./shippingRoutes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
-import { runMigrations } from 'stripe-replit-sync';
-import { getStripeSync } from "./stripeClient";
 import { WebhookHandlers } from "./webhookHandlers";
 
 const app = express();
@@ -20,38 +18,12 @@ declare module "http" {
 }
 
 async function initStripe() {
-  const databaseUrl = process.env.DATABASE_URL;
-  if (!databaseUrl) {
-    console.log('DATABASE_URL not found, skipping Stripe initialization');
-    return;
-  }
-
   try {
-    console.log('Initializing Stripe schema...');
-    await runMigrations({ databaseUrl });
-    console.log('Stripe schema ready');
-
-    const stripeSync = await getStripeSync();
-
-    try {
-      console.log('Setting up managed webhook...');
-      const webhookBaseUrl = `https://${process.env.REPLIT_DOMAINS?.split(',')[0]}`;
-      const result = await stripeSync.findOrCreateManagedWebhook(
-        `${webhookBaseUrl}/api/stripe/webhook`
-      );
-      if (result?.webhook?.url) {
-        console.log(`Webhook configured: ${result.webhook.url}`);
-      } else {
-        console.log('Webhook setup skipped (no URL available)');
-      }
-    } catch (webhookError) {
-      console.log('Webhook setup skipped:', webhookError);
+    if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_PUBLISHABLE_KEY) {
+      console.log('Stripe keys not found, skipping Stripe initialization');
+      return;
     }
-
-    console.log('Syncing Stripe data...');
-    stripeSync.syncBackfill()
-      .then(() => console.log('Stripe data synced'))
-      .catch((err: any) => console.error('Error syncing Stripe data:', err));
+    console.log('Stripe initialized');
   } catch (error) {
     console.error('Failed to initialize Stripe:', error);
   }
@@ -179,10 +151,7 @@ app.use((req, res, next) => {
     await setupVite(httpServer, app);
   }
 
-  // ALWAYS serve the app on the port specified in the environment variable PORT
-  // Other ports are firewalled. Default to 5000 if not specified.
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
+  // Serve both the API and the client on the configured port
   const port = parseInt(process.env.PORT || "5000", 10);
   httpServer.listen(
     {
